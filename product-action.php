@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         die("Not enough stock available!");
     }
 
-    if ($action == 'Add to Cart') {
+    if ($action == 'add_to_cart') {
         // Cart logic
         if (!isset($_SESSION['cart'])) {
             $_SESSION['cart'] = [];
@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit();
     }
 
-    if ($action == 'Buy Now') {
+    if ($action == 'buy_now') {
         // Buy Now logic — pass data to buy-now page via session
         $_SESSION['buy_now'] = [
             'product_id' => $product_id,

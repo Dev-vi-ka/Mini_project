@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['product_id'])) {
     $sql = "DELETE FROM products WHERE id = $product_id";
 
     if (mysqli_query($conn, $sql)) {
-        header("Location: dashboard.php");
+        header("Location: index.php");
         exit();
     } else {
         echo "Failed to delete product.";

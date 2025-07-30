@@ -35,7 +35,7 @@ if (isset($_SESSION['cart']) && count($_SESSION['cart']) > 0) {
     echo "<h3>Total: ₹" . $total . "</h3>";
 
     // Payment form
-    echo "<form method='post' action='thankyou.php'>";
+    echo "<form method='post' action='pay.php'>";
     echo "<input type='submit' name='pay' value='Pay Now'>";
     echo "</form>";
 

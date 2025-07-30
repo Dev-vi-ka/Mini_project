@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             VALUES ('$name', '$price', '$stock', '$image')";
 
     if (mysqli_query($conn, $sql)) {
-        header("Location: dashboard.php");
+        header("Location: index.php");
         exit();
     } else {
         $error = "Failed to add product.";
@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </form>
 
 <br>
-<a href="dashboard.php">← Back to Dashboard</a>
+<a href="index.php">← Back to Dashboard</a>
 
 </body>
 </html>

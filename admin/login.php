@@ -3,7 +3,7 @@ session_start();
 
 // If already logged in, redirect to dashboard
 if (isset($_SESSION['admin_logged_in'])) {
-    header("Location: dashboard.php");
+    header("Location: index.php");
     exit();
 }
 
@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if ($username === $correct_username && $password === $correct_password) {
         $_SESSION['admin_logged_in'] = true;
-        header("Location: dashboard.php");
+        header("Location: index.php");
         exit();
     } else {
         $error = "Invalid login credentials!";

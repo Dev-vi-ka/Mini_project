@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                WHERE id = $product_id";
 
     if (mysqli_query($conn, $update)) {
-        header("Location: dashboard.php");
+        header("Location: index.php");
         exit();
     } else {
         $error = "Failed to update product.";
@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </form>
 
 <br>
-<a href="dashboard.php">← Back to Dashboard</a>
+<a href="index.php">← Back to Dashboard</a>
 
 </body>
 </html>
