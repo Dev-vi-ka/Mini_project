@@ -1,35 +1,30 @@
 <?php
 session_start();
 include 'includes/db.php';
-include 'includes/razorpay_config.php';
+include 'includes/razorpay_config.php'; // contains RAZORPAY_KEY_ID, SECRET, CURRENCY, and API URL
 
-// Figure out mode + compute amount (in paise)
 $mode = null;
-$amountPaise = 0;  // Razorpay expects smallest unit
+$amountPaise = 0;  // Razorpay expects amount in paise
 
-// --- BUY NOW mode ---
+// --- BUY NOW ---
 if (isset($_SESSION['buy_now'])) {
     $mode = 'buy_now';
-    $p = $_SESSION['buy_now']; // product_id, product_name, price, quantity
-
-    // Stock check (fresh)
+    $p = $_SESSION['buy_now']; // product_id, quantity
     $pid = (int)$p['product_id'];
     $qty = (int)$p['quantity'];
+
     $rs = mysqli_query($conn, "SELECT stock, price FROM products WHERE id={$pid}");
     $row = mysqli_fetch_assoc($rs);
     if (!$row || $row['stock'] < $qty) {
-        echo "<h2>❌ Not enough stock for this product.</h2><a href='index.php'>Back</a>";
+        echo "<h2>❌ Not enough stock.</h2><a href='index.php'>Back</a>";
         exit;
     }
 
-    // Use DB price as source of truth
     $amountPaise = ((int)$row['price'] * $qty) * 100;
 
-// --- CART mode ---
 } elseif (isset($_SESSION['cart']) && count($_SESSION['cart']) > 0) {
     $mode = 'cart';
 
-    // Check stock for all cart items and compute total from DB prices
     foreach ($_SESSION['cart'] as $product_id => $qty) {
         $pid = (int)$product_id;
         $qty = (int)$qty;
@@ -37,9 +32,10 @@ if (isset($_SESSION['buy_now'])) {
         $rs = mysqli_query($conn, "SELECT stock, price FROM products WHERE id={$pid}");
         $row = mysqli_fetch_assoc($rs);
         if (!$row || $row['stock'] < $qty) {
-            echo "<h2>❌ Not enough stock for one of your items (Product ID: {$pid}).</h2><a href='cart.php'>Back to Cart</a>";
+            echo "<h2>❌ Not enough stock (Product ID: {$pid}).</h2><a href='cart.php'>Back</a>";
             exit;
         }
+
         $amountPaise += ((int)$row['price'] * $qty) * 100;
     }
 } else {
@@ -47,15 +43,13 @@ if (isset($_SESSION['buy_now'])) {
     exit;
 }
 
-// Create a unique receipt ID for traceability
 $receiptId = strtoupper(($mode === 'buy_now' ? 'BN' : 'CRT')) . '_' . time();
 
-// Create Razorpay Order via Orders API (Basic Auth with KEY_ID:KEY_SECRET)
 $payload = json_encode([
     'amount'          => $amountPaise,
     'currency'        => RAZORPAY_CURRENCY,
     'receipt'         => $receiptId,
-    'payment_capture' => 1  // let Razorpay auto-capture
+    'payment_capture' => 1
 ]);
 
 $ch = curl_init(RAZORPAY_API_ORDERS);
@@ -66,6 +60,7 @@ curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
 $response = curl_exec($ch);
 $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
 if ($response === false || $httpcode < 200 || $httpcode >= 300) {
     echo "<h2>Could not create Razorpay Order. Try again.</h2>";
     if ($response) echo "<pre>".htmlspecialchars($response)."</pre>";
@@ -75,29 +70,28 @@ curl_close($ch);
 
 $order = json_decode($response, true);
 $razorpayOrderId = $order['id'] ?? null;
+
 if (!$razorpayOrderId) {
-    echo "<h2>Invalid response from Razorpay.</h2>";
+    echo "<h2>Invalid Razorpay response.</h2>";
     exit;
 }
 
-// Save order in session to use during verification
 $_SESSION['rzp_order'] = [
     'order_id' => $razorpayOrderId,
     'amount'   => $amountPaise,
     'mode'     => $mode,
 ];
-
 ?>
+
 <!DOCTYPE html>
 <html>
 <head><title>Redirecting to Payment…</title></head>
 <body>
 <h2>Redirecting to payment…</h2>
 
-<!-- Razorpay Checkout script -->
+<!-- Razorpay Checkout -->
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
-// Minimal Checkout options
 var options = {
     key:        "<?php echo RAZORPAY_KEY_ID; ?>",
     amount:     "<?php echo $amountPaise; ?>",
@@ -105,23 +99,33 @@ var options = {
     name:       "Vending Machine",
     description:"Order: <?php echo $receiptId; ?>",
     order_id:   "<?php echo $razorpayOrderId; ?>",
-
-    // Prefer redirect flow so that server receives POST on completion
     callback_url: "verify.php",
     redirect: true,
+    prefill: {
+        name: "Test User",
+        email: "test@example.com",
+        contact: "9999999999"
+    },
+    notes: {
+        mode: "<?php echo $mode; ?>",
+        receipt: "<?php echo $receiptId; ?>"
+    },
 
-    // Optional prefill in test mode
-    prefill: { name: "Test User", email: "test@example.com", contact: "9999999999" },
-    notes:   { mode: "<?php echo $mode; ?>", receipt: "<?php echo $receiptId; ?>" }
+    // ✅ Force-enable UPI and disable others for clarity
+    method: {
+        upi: true,
+        card: true,
+        netbanking: true,
+        wallet: true,
+    }
 };
 
 var rzp = new Razorpay(options);
-// Auto-open checkout
 rzp.open();
 </script>
 
 <noscript>
-  JavaScript required to proceed to payment.
+  Please enable JavaScript to continue with payment.
 </noscript>
 </body>
 </html>
