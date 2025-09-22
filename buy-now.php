@@ -7,6 +7,7 @@ if (!isset($_SESSION['buy_now'])) {
 }
 
 $buy_now = $_SESSION['buy_now'];
+$product_id = $buy_now['product_id'];
 $product_name = $buy_now['product_name'];
 $price = $buy_now['price'];
 $quantity = $buy_now['quantity'];
@@ -14,9 +15,10 @@ $subtotal = $price * $quantity;
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Buy Now - <?php echo $product_name; ?></title>
+  <meta charset="UTF-8">
+  <title>Buy Now - <?php echo htmlspecialchars($product_name); ?></title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
   <style>
     body {
@@ -34,25 +36,36 @@ $subtotal = $price * $quantity;
     .buy-title {
       font-weight: 700;
       font-size: 1.5rem;
-      color: #d63384;
+      color: #d63384; /* professional pink */
     }
     .price-label {
       font-weight: 500;
       color: #333;
+      margin: 0.3rem 0;
     }
     .total {
       font-size: 1.3rem;
       font-weight: bold;
-      color: #fd7e14;
+      color: #c06c84; /* slightly muted, elegant pink */
+      margin-top: 1rem;
     }
     .pay-btn {
       background-color: #d63384;
       color: white;
       font-weight: 600;
+      border-radius: 8px;
+      transition: background 0.2s ease-in-out;
+    }
+    .pay-btn:hover {
+      background-color: #b52a6b;
     }
     .back-link {
       color: #6c757d;
       font-size: 0.9rem;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
@@ -61,14 +74,16 @@ $subtotal = $price * $quantity;
   <section class="section">
     <div class="buy-card">
       <p class="has-text-right"><a href="index.php" class="back-link">← Back to Products</a></p>
-      <h1 class="buy-title">Buy Now: <?php echo $product_name; ?></h1>
+      <h1 class="buy-title">Buy Now: <?php echo htmlspecialchars($product_name); ?></h1>
       <hr>
 
-      <p class="price-label">Price per item: ₹<?php echo $price; ?></p>
+      <p class="price-label">Price per item: ₹<?php echo number_format($price, 2); ?></p>
       <p class="price-label">Quantity: <?php echo $quantity; ?></p>
-      <p class="price-label total">Total: ₹<?php echo $subtotal; ?></p>
+      <p class="price-label total">Total: ₹<?php echo number_format($subtotal, 2); ?></p>
 
       <form method="post" action="pay.php">
+        <input type="hidden" name="product_id" value="<?php echo $product_id; ?>">
+        <input type="hidden" name="quantity" value="<?php echo $quantity; ?>">
         <button type="submit" name="pay" class="button is-fullwidth mt-4 pay-btn">Pay Now</button>
       </form>
     </div>

@@ -6,11 +6,16 @@ include 'includes/razorpay_config.php';
 $mode = null;
 $amountPaise = 0;
 
-if (isset($_SESSION['buy_now'])) {
+if (isset($_SESSION['buy_now']) || (isset($_POST['product_id']) && isset($_POST['quantity']))) {
     $mode = 'buy_now';
-    $p = $_SESSION['buy_now'];
-    $pid = (int)$p['product_id'];
-    $qty = (int)$p['quantity'];
+    if (isset($_SESSION['buy_now'])) {
+        $p = $_SESSION['buy_now'];
+        $pid = (int)$p['product_id'];
+        $qty = (int)$p['quantity'];
+    } else {
+        $pid = (int)$_POST['product_id'];
+        $qty = (int)$_POST['quantity'];
+    }
     $rs = mysqli_query($conn, "SELECT stock, price FROM products WHERE id={$pid}");
     $row = mysqli_fetch_assoc($rs);
     if (!$row || $row['stock'] < $qty) {
@@ -18,6 +23,9 @@ if (isset($_SESSION['buy_now'])) {
         exit;
     }
     $amountPaise = ((int)$row['price'] * $qty) * 100;
+
+    // Update stock before session is destroyed
+    mysqli_query($conn, "UPDATE products SET stock = stock - $qty WHERE id = $pid");
 
 } elseif (isset($_SESSION['cart']) && count($_SESSION['cart']) > 0) {
     $mode = 'cart';
@@ -31,6 +39,8 @@ if (isset($_SESSION['buy_now'])) {
             exit;
         }
         $amountPaise += ((int)$row['price'] * $qty) * 100;
+        // Update stock before session is destroyed
+        mysqli_query($conn, "UPDATE products SET stock = stock - $qty WHERE id = $pid");
     }
 } else {
     header('Location: index.php');
@@ -86,7 +96,6 @@ var options = {
     name: "Vending Machine",
     description: "Order: <?php echo $receiptId; ?>",
     order_id: "<?php echo $razorpayOrderId; ?>",
-    // ✅ ADD ORDER ID TO CALLBACK URL AS GET PARAM
     callback_url: "http://localhost/mini_project/verify.php?oid=<?php echo $razorpayOrderId; ?>",
     redirect: true,
     prefill: {
@@ -95,7 +104,9 @@ var options = {
         contact: "9999999999"
     },
     notes: {
-        mode: "<?php echo $mode; ?>"
+        mode: "<?php echo $mode; ?>",
+        product_id: "<?php echo $pid; ?>",
+        quantity: "<?php echo $qty; ?>"
     }
 };
 
