@@ -118,5 +118,25 @@ try {
 // Clear Razorpay session
 unset($_SESSION['rzp_order']);
 
+// --- ESP32 vending trigger (optional) ---
+// If you have an ESP32 on the local network that should be triggered
+// when a payment is successful, send a simple HTTP request to it.
+// This uses @file_get_contents (as your snippet). We also append a
+// short log to `razor-debug.txt` so failures are visible.
+if (!empty($paymentId)) {
+    $esp_ip = "http://192.168.1.50/vend?token=1"; // change as needed
+    $esp_response = @file_get_contents($esp_ip);
+
+    $logEntry = "[" . date('c') . "] ESP_TRIGGER -> URL: $esp_ip | Response: ";
+    if ($esp_response === false) {
+        $logEntry .= "ERROR\n";
+    } else {
+        $logEntry .= trim($esp_response) . "\n";
+    }
+
+    // Append to debug log in project root (same file used for other Razorpay debug in repo)
+    @file_put_contents(__DIR__ . '/razor-debug.txt', $logEntry, FILE_APPEND);
+}
+
 header("Location: thankyou.php");
 exit;

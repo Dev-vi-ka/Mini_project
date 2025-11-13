@@ -4,3 +4,5 @@ Array
     [razorpay_order_id] => order_R17ntuMq5e628i
     [razorpay_signature] => 673a0680c681cc99d3c85639c15d72f27207ae1c3afeb222c7c39ff3f428c8b7
 )
+[2025-11-10T06:14:25+01:00] ESP_TRIGGER -> URL: http://192.168.1.50/vend?token=1 | Response: ERROR
+[2025-11-10T07:52:58+01:00] ESP_TRIGGER -> URL: http://192.168.1.50/vend?token=1 | Response: OK
