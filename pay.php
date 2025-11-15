@@ -24,8 +24,8 @@ if (isset($_SESSION['buy_now']) || (isset($_POST['product_id']) && isset($_POST[
     }
     $amountPaise = ((int)$row['price'] * $qty) * 100;
 
-    // Update stock before session is destroyed
-    mysqli_query($conn, "UPDATE products SET stock = stock - $qty WHERE id = $pid");
+    // NOTE: Do NOT decrement stock here. Stock is decremented after
+    // successful payment in `verify.php` to avoid double-subtraction.
 
 } elseif (isset($_SESSION['cart']) && count($_SESSION['cart']) > 0) {
     $mode = 'cart';
@@ -39,8 +39,6 @@ if (isset($_SESSION['buy_now']) || (isset($_POST['product_id']) && isset($_POST[
             exit;
         }
         $amountPaise += ((int)$row['price'] * $qty) * 100;
-        // Update stock before session is destroyed
-        mysqli_query($conn, "UPDATE products SET stock = stock - $qty WHERE id = $pid");
     }
 } else {
     header('Location: index.php');
@@ -96,8 +94,41 @@ var options = {
     name: "Vending Machine",
     description: "Order: <?php echo $receiptId; ?>",
     order_id: "<?php echo $razorpayOrderId; ?>",
-    callback_url: "http://localhost/mini_project/verify.php?oid=<?php echo $razorpayOrderId; ?>",
-    redirect: true,
+    // Use popup flow and handle server verification via AJAX
+    // No callback_url when using handler/redirect:false
+    redirect: false,
+    handler: function (response){
+        var form = new URLSearchParams();
+        form.append('razorpay_payment_id', response.razorpay_payment_id);
+        form.append('razorpay_order_id', response.razorpay_order_id);
+        if(response.razorpay_signature){ form.append('razorpay_signature', response.razorpay_signature); }
+
+        fetch('verify.php', {
+            method: 'POST',
+            headers: { 'Accept': 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: form.toString()
+        }).then(function(res){
+            var ct = res.headers.get('content-type') || '';
+            if (!res.ok) {
+                return res.text().then(function(txt){ throw new Error('Server error ' + res.status + ': ' + txt); });
+            }
+            if (ct.indexOf('application/json') !== -1) {
+                return res.json();
+            }
+            return res.text().then(function(txt){ throw new Error('Expected JSON response but received: ' + txt); });
+        }).then(function(data){
+            if (data && data.success) {
+                window.location.href = data.redirect || 'thankyou.php';
+            } else {
+                var msg = data && data.message ? data.message : 'Unknown';
+                alert('Payment verification failed: ' + msg);
+                console.error('verify response', data);
+            }
+        }).catch(function(err){
+            console.error('Verification fetch error:', err);
+            alert('Payment verification error: ' + (err && err.message ? err.message : 'Check server logs'));
+        });
+    },
     prefill: {
         name: "Test User",
         email: "test@example.com",

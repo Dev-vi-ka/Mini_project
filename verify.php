@@ -2,30 +2,92 @@
 session_start();
 include 'includes/db.php';
 include 'includes/razorpay_config.php';
+include 'includes/twilio.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST' ||
-    !isset($_POST['razorpay_payment_id'], $_POST['razorpay_order_id'], $_POST['razorpay_signature'])
-) {
-    echo "<h2>Invalid payment response.</h2><a href='index.php'>Back</a>";
+// Detect AJAX (popup) requests that expect JSON
+$isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+    || (strpos($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json') !== false);
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    // Friendly GET page when visiting the callback URL directly
+    $oid = $_GET['oid'] ?? '';
+    echo "<h2>Payment callback expects a POST from Razorpay.</h2>";
+    if ($oid) {
+        echo "<p>Order ID: <strong>" . htmlspecialchars($oid) . "</strong></p>";
+    }
+    echo "<p><a href='index.php'>Back to shop</a></p>";
     exit;
 }
 
-$paymentId = $_POST['razorpay_payment_id'];
-$orderId   = $_POST['razorpay_order_id'];
-$signature = $_POST['razorpay_signature'];
+// POST: signature may be present (redirect flow) or absent (popup flow)
+$paymentId = $_POST['razorpay_payment_id'] ?? '';
+$orderId   = $_POST['razorpay_order_id'] ?? '';
+$signature = $_POST['razorpay_signature'] ?? '';
+
+if (!$paymentId || !$orderId) {
+    if ($isAjax) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Missing payment_id or order_id']);
+    } else {
+        echo "<h2>Invalid payment response.</h2><a href='index.php'>Back</a>";
+    }
+    exit;
+}
 
 // ✅ Fallback to GET param if session was lost
 $expectedOrder = $_SESSION['rzp_order']['order_id'] ?? $_GET['oid'] ?? '';
 
-if ($expectedOrder !== $orderId) {
-    echo "<h2>Order mismatch. Please contact support.</h2>";
+if ($expectedOrder !== '' && $expectedOrder !== $orderId) {
+    $log = "[" . date('c') . "] ORDER_MISMATCH -> expected={$expectedOrder} got={$orderId}\n";
+    @file_put_contents(__DIR__ . '/razor-debug.txt', $log, FILE_APPEND);
+    if ($isAjax) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Order mismatch']);
+    } else {
+        echo "<h2>Order mismatch. Please contact support.</h2>";
+    }
     exit;
 }
 
-// Signature verification
-$expectedSignature = hash_hmac('sha256', $orderId . '|' . $paymentId, RAZORPAY_KEY_SECRET);
-if (!hash_equals($expectedSignature, $signature)) {
-    echo "<h2>Signature verification failed.</h2>";
+// Verify signature if present; otherwise verify payment server-side via Razorpay API
+$verified = false;
+if (!empty($signature)) {
+    $expectedSignature = hash_hmac('sha256', $orderId . '|' . $paymentId, RAZORPAY_KEY_SECRET);
+    if (hash_equals($expectedSignature, $signature)) {
+        $verified = true;
+    } else {
+        $log = "[" . date('c') . "] SIG_FAIL -> order={$orderId} payment={$paymentId} signature={$signature}\n";
+        @file_put_contents(__DIR__ . '/razor-debug.txt', $log, FILE_APPEND);
+    }
+} else {
+    // Server-side check: fetch payment info from Razorpay and ensure it's captured and linked to this order
+    $ch = curl_init('https://api.razorpay.com/v1/payments/' . $paymentId);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_USERPWD, RAZORPAY_KEY_ID . ':' . RAZORPAY_KEY_SECRET);
+    $resp = curl_exec($ch);
+    $http = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    if ($http === 200) {
+        $p = json_decode($resp, true);
+        if (isset($p['order_id'], $p['status']) && $p['order_id'] === $orderId && $p['status'] === 'captured') {
+            $verified = true;
+        } else {
+            $log = "[" . date('c') . "] PAYMENT_NOT_CAPTURED_OR_MISMATCH -> resp=" . trim($resp) . "\n";
+            @file_put_contents(__DIR__ . '/razor-debug.txt', $log, FILE_APPEND);
+        }
+    } else {
+        $log = "[" . date('c') . "] RAZORPAY_API_ERROR code={$http} resp=" . trim($resp) . "\n";
+        @file_put_contents(__DIR__ . '/razor-debug.txt', $log, FILE_APPEND);
+    }
+}
+
+if (!$verified) {
+    if ($isAjax) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Verification failed']);
+    } else {
+        echo "<h2>Signature/payment verification failed.</h2>";
+    }
     exit;
 }
 
@@ -75,6 +137,19 @@ try {
         // }
         foreach ($buy_now_cart as $pid => $qty) {
             mysqli_query($conn, "UPDATE products SET stock = stock - $qty WHERE id = $pid");
+            // Check remaining stock and alert if low
+            $rs2 = mysqli_query($conn, "SELECT name, stock FROM products WHERE id = $pid");
+            $r2 = mysqli_fetch_assoc($rs2);
+            if ($r2) {
+                $remaining = intval($r2['stock']);
+                if (defined('LOW_STOCK_ALERTS_ENABLED') && LOW_STOCK_ALERTS_ENABLED && defined('LOW_STOCK_THRESHOLD') && $remaining <= LOW_STOCK_THRESHOLD) {
+                    $productName = $r2['name'];
+                    $msg = "Low stock alert: Product '" . $productName . "' (ID: $pid) has only $remaining left.";
+                    $res = send_whatsapp_message(defined('TWILIO_WHATSAPP_TO') ? TWILIO_WHATSAPP_TO : '', $msg);
+                    $log = "[" . date('c') . "] LOW_STOCK_ALERT -> pid={$pid} name=" . addslashes($productName) . " remaining={$remaining} res=" . substr($res['response'], 0, 400) . "\n";
+                    @file_put_contents(__DIR__ . '/razor-debug.txt', $log, FILE_APPEND);
+                }
+            }
         }
         unset($_SESSION['buy_now']);
 
@@ -101,6 +176,19 @@ try {
             $pid = intval($pid);
             $qty = intval($qty);
             mysqli_query($conn, "UPDATE products SET stock = stock - $qty WHERE id = $pid");
+            // Check remaining stock and alert if low
+            $rs2 = mysqli_query($conn, "SELECT name, stock FROM products WHERE id = $pid");
+            $r2 = mysqli_fetch_assoc($rs2);
+            if ($r2) {
+                $remaining = intval($r2['stock']);
+                if (defined('LOW_STOCK_ALERTS_ENABLED') && LOW_STOCK_ALERTS_ENABLED && defined('LOW_STOCK_THRESHOLD') && $remaining <= LOW_STOCK_THRESHOLD) {
+                    $productName = $r2['name'];
+                    $msg = "Low stock alert: Product '" . $productName . "' (ID: $pid) has only $remaining left.";
+                    $res = send_whatsapp_message(defined('TWILIO_WHATSAPP_TO') ? TWILIO_WHATSAPP_TO : '', $msg);
+                    $log = "[" . date('c') . "] LOW_STOCK_ALERT -> pid={$pid} name=" . addslashes($productName) . " remaining={$remaining} res=" . substr($res['response'], 0, 400) . "\n";
+                    @file_put_contents(__DIR__ . '/razor-debug.txt', $log, FILE_APPEND);
+                }
+            }
         }
 
         unset($_SESSION['cart']);
@@ -138,5 +226,11 @@ if (!empty($paymentId)) {
     @file_put_contents(__DIR__ . '/razor-debug.txt', $logEntry, FILE_APPEND);
 }
 
-header("Location: thankyou.php");
+// Respond to AJAX (popup) requests with JSON to avoid HTML being parsed as JSON
+if ($isAjax) {
+    header('Content-Type: application/json');
+    echo json_encode(['success' => true, 'redirect' => 'thankyou.php']);
+} else {
+    header("Location: thankyou.php");
+}
 exit;
