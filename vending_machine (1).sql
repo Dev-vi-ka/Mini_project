@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 11, 2025 at 05:35 AM
+-- Generation Time: Nov 15, 2025 at 07:19 AM
 -- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
+-- PHP Version: 8.0.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -40,10 +40,10 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`id`, `name`, `price`, `stock`, `image`) VALUES
-(1, 'Choco Bar', 30, 29, 'choco.jpg'),
-(2, 'Lays', 20, 5, 'lays.jpg'),
-(3, 'Coke', 50, 0, 'coke.jpg'),
-(4, 'jioj', 466, 56, 'ian.jpg');
+(1, 'Whisper Ultra Clean', 5, 4, 'images/whisper_ultra_clean.jpg'),
+(2, 'Stayfree Secure XL', 5, 9, 'images/stayfree_secure_xl.webp'),
+(3, 'Sofy AntiBacteria', 5, 10, 'images/sofy_antibacteria.jpg'),
+(4, 'Nua Sanitary Pads', 5, 10, 'images/nua_pads.webp');
 
 --
 -- Indexes for dumped tables
@@ -63,7 +63,7 @@ ALTER TABLE `products`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
