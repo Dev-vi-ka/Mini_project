@@ -6,46 +6,84 @@ include 'includes/db.php';
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #fef6f9; /* soft pink background */
+        * {
+            box-sizing: border-box;
+        }
+        html, body {
             margin: 0;
             padding: 0;
         }
+        body {
+            font-family: Arial, sans-serif;
+            background: #fef6f9; /* soft pink background */
+            font-size: 14px;
+        }
         .container {
             max-width: 700px;
-            margin: 40px auto;
+            margin: 20px auto;
             background: #fff;
-            padding: 25px;
+            padding: 15px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
+        @media (min-width: 768px) {
+            .container {
+                margin: 40px auto;
+                padding: 25px;
+            }
+        }
         h1 {
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             color: #d63384; /* deep pink */
+            font-size: 1.5rem;
+        }
+        @media (min-width: 768px) {
+            h1 {
+                font-size: 2rem;
+                margin-bottom: 25px;
+            }
         }
         .product {
-            margin-bottom: 15px;
-            padding: 15px;
+            margin-bottom: 12px;
+            padding: 12px;
             border-radius: 8px;
             background: #fff0f6; /* pale pink box */
             border: 1px solid #f8d7e9;
         }
+        @media (min-width: 768px) {
+            .product {
+                margin-bottom: 15px;
+                padding: 15px;
+            }
+        }
         .product strong {
-            font-size: 18px;
+            font-size: 16px;
             color: #c2185b; /* darker pink for product names */
+        }
+        @media (min-width: 768px) {
+            .product strong {
+                font-size: 18px;
+            }
         }
         hr {
             border: none;
             border-top: 1px solid #f3c6db;
-            margin: 10px 0;
+            margin: 15px 0;
         }
         h3 {
-            text-align: right;
+            text-align: center;
             color: #880e4f;
+            font-size: 1.2rem;
+        }
+        @media (min-width: 768px) {
+            h3 {
+                text-align: right;
+            }
         }
         form {
             text-align: center;
@@ -60,25 +98,41 @@ include 'includes/db.php';
             font-size: 16px;
             cursor: pointer;
             transition: 0.3s;
+            min-height: 44px;
+            width: 100%;
+        }
+        @media (min-width: 768px) {
+            input[type="submit"] {
+                width: auto;
+            }
         }
         input[type="submit"]:hover {
             background: #c2185b;
         }
         .empty {
             text-align: center;
-            padding: 20px;
+            padding: 15px;
             font-size: 16px;
             color: #666;
         }
         .empty a {
-            display: inline-block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             margin-top: 15px;
             text-decoration: none;
             background: #d63384;
             color: white;
-            padding: 10px 20px;
+            padding: 12px 20px;
             border-radius: 6px;
             transition: 0.3s;
+            min-height: 44px;
+            width: 100%;
+        }
+        @media (min-width: 768px) {
+            .empty a {
+                width: auto;
+            }
         }
         .empty a:hover {
             background: #ad1457;

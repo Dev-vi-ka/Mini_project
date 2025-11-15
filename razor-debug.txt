@@ -6,3 +6,14 @@ Array
 )
 [2025-11-10T06:14:25+01:00] ESP_TRIGGER -> URL: http://192.168.1.50/vend?token=1 | Response: ERROR
 [2025-11-10T07:52:58+01:00] ESP_TRIGGER -> URL: http://192.168.1.50/vend?token=1 | Response: OK
+[2025-11-13T06:56:47+01:00] ESP_TRIGGER -> URL: http://192.168.1.50/vend?token=1 | Response: ERROR
+[2025-11-13T07:00:54+01:00] ESP_TRIGGER -> URL: http://192.168.1.50/vend?token=1 | Response: ERROR
+[2025-11-13T07:06:50+01:00] ESP_TRIGGER -> URL: http://192.168.1.50/vend?token=1 | Response: OK
+[2025-11-13T07:14:51+01:00] ESP_TRIGGER -> URL: http://192.168.1.50/vend?token=1 | Response: OK
+[2025-11-13T07:46:06+01:00] ESP_TRIGGER -> URL: http://192.168.1.50/vend?token=1 | Response: ERROR
+[2025-11-13T07:47:44+01:00] ESP_TRIGGER -> URL: http://192.168.1.50/vend?token=1 | Response: ERROR
+[2025-11-13T07:53:08+01:00] ESP_TRIGGER -> URL: http://192.168.1.50/vend?token=1 | Response: ERROR
+[2025-11-15T04:58:22+01:00] ESP_TRIGGER -> URL: http://192.168.1.50/vend?token=1 | Response: ERROR
+[2025-11-15T05:06:08+01:00] ESP_TRIGGER -> URL: http://192.168.1.50/vend?token=1 | Response: ERROR
+[2025-11-15T06:02:09+01:00] ESP_TRIGGER -> URL: http://192.168.1.50/vend?token=1 | Response: ERROR
+[2025-11-15T07:08:02+01:00] ESP_TRIGGER -> URL: http://10.104.42.84/vend?token=1 | Response: OK

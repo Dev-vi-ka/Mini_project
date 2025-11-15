@@ -25,41 +25,70 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add New Product</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #fef6f9; /* soft pink */
+        * {
+            box-sizing: border-box;
+        }
+        html, body {
             margin: 0;
             padding: 0;
         }
+        body {
+            font-family: Arial, sans-serif;
+            background: #fef6f9; /* soft pink */
+            font-size: 14px;
+        }
         .container {
             max-width: 600px;
-            margin: 60px auto;
+            margin: 20px auto;
             background: #fff;
-            padding: 35px;
+            padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        @media (min-width: 768px) {
+            .container {
+                margin: 60px auto;
+                padding: 35px;
+            }
         }
         h1 {
             text-align: center;
             color: #d63384;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        @media (min-width: 768px) {
+            h1 {
+                margin-bottom: 25px;
+                font-size: 2rem;
+            }
         }
         form label {
             display: block;
             margin-bottom: 6px;
             font-weight: bold;
             color: #880e4f;
+            font-size: 14px;
         }
         form input[type="text"],
         form input[type="number"] {
             width: 100%;
             padding: 10px;
-            margin-bottom: 18px;
+            margin-bottom: 15px;
             border: 1px solid #f3c6db;
             border-radius: 6px;
-            font-size: 15px;
+            font-size: 16px;
+        }
+        @media (min-width: 768px) {
+            form input[type="text"],
+            form input[type="number"] {
+                margin-bottom: 18px;
+                font-size: 15px;
+            }
         }
         form input[type="submit"] {
             background: #e83e8c;
@@ -71,6 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             cursor: pointer;
             transition: 0.3s;
             width: 100%;
+            min-height: 44px;
         }
         form input[type="submit"]:hover {
             background: #c2185b;
@@ -79,6 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             color: red;
             text-align: center;
             margin-bottom: 15px;
+            font-size: 14px;
         }
         .back-link {
             display: block;
@@ -88,6 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             color: #d63384;
             font-weight: bold;
             transition: 0.3s;
+            font-size: 14px;
         }
         .back-link:hover {
             color: #ad1457;

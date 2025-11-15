@@ -26,38 +26,88 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['product_id'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Cart</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
     <style>
+        * {
+            box-sizing: border-box;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
         body {
             background-color: #fde6e6;
             font-family: 'Segoe UI', sans-serif;
+            font-size: 14px;
         }
         .cart-card {
             background: #fff;
             border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 30px;
+            padding: 15px;
+            margin-bottom: 20px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        @media (min-width: 768px) {
+            .cart-card {
+                padding: 20px;
+                margin-bottom: 30px;
+            }
+        }
+        .cart-card .column {
+            padding: 8px;
+        }
+        @media (min-width: 768px) {
+            .cart-card .column {
+                padding: 0.75rem;
+            }
         }
         .btn-remove {
             background-color: #e56b6b;
             color: white;
+            width: 100%;
+            min-height: 44px;
+        }
+        @media (min-width: 768px) {
+            .btn-remove {
+                width: auto;
+            }
         }
         .btn-yellow {
             background-color: #c6ad4c;
             color: white;
+            min-height: 44px;
         }
         .btn-back {
             background-color: #dc8b8b;
             color: white;
+            min-height: 44px;
+        }
+        .is-96x96 {
+            width: 80px !important;
+            height: 80px !important;
+        }
+        @media (min-width: 768px) {
+            .is-96x96 {
+                width: 96px !important;
+                height: 96px !important;
+            }
+        }
+        .title {
+            font-size: 1.5rem !important;
+        }
+        @media (min-width: 768px) {
+            .title {
+                font-size: 2rem !important;
+            }
         }
     </style>
 </head>
 <body>
 
-<section class="section">
-    <div class="container">
+<section class="section" style="padding: 1rem 1rem;">
+    <div class="container" style="padding: 0 15px;">
         <h1 class="title has-text-centered mb-5">🛒 Your Cart</h1>
 
         <?php
@@ -76,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['product_id'])) {
                     <div class="columns is-vcentered">
                         <div class="column is-narrow">
                             <figure class="image is-96x96">
-                                <img src="images/<?php echo $product['image']; ?>" alt="<?php echo $product['name']; ?>">
+                                <img src="public/product <?php echo $product['image']; ?>" alt="<?php echo $product['name']; ?>">
                             </figure>
                         </div>
                         <div class="column">

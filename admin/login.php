@@ -30,36 +30,56 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
         body {
             font-family: 'Poppins', sans-serif;
             background-color: #f9f9fb;
-            margin: 0;
-            padding: 0;
+            font-size: 14px;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
+            padding: 20px;
         }
         .login-box {
             background: #fff;
-            padding: 30px 40px;
+            padding: 20px;
             border-radius: 10px;
             box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
-            width: 350px;
+            width: 100%;
+            max-width: 350px;
             text-align: center;
+        }
+        @media (min-width: 768px) {
+            .login-box {
+                padding: 30px 40px;
+            }
         }
         .login-box h1 {
             margin-bottom: 20px;
             color: #e91e63;
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 600;
+        }
+        @media (min-width: 768px) {
+            .login-box h1 {
+                font-size: 22px;
+            }
         }
         .error {
             color: #f44336;
             margin-bottom: 15px;
-            font-size: 14px;
+            font-size: 13px;
         }
         .form-group {
             text-align: left;
@@ -77,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 16px;
         }
         .form-group input:focus {
             border-color: #e91e63;
@@ -94,6 +114,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             font-weight: 600;
             cursor: pointer;
             transition: background 0.3s ease;
+            min-height: 44px;
+            font-size: 16px;
         }
         .btn:hover {
             background: #c2185b;
@@ -101,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .back-link {
             display: block;
             margin-top: 15px;
-            font-size: 14px;
+            font-size: 13px;
             color: #555;
             text-decoration: none;
         }

@@ -124,7 +124,7 @@ unset($_SESSION['rzp_order']);
 // This uses @file_get_contents (as your snippet). We also append a
 // short log to `razor-debug.txt` so failures are visible.
 if (!empty($paymentId)) {
-    $esp_ip = "http://192.168.1.50/vend?token=1"; // change as needed
+    $esp_ip = "http://10.104.42.84/vend?token=1"; // change as needed
     $esp_response = @file_get_contents($esp_ip);
 
     $logEntry = "[" . date('c') . "] ESP_TRIGGER -> URL: $esp_ip | Response: ";
