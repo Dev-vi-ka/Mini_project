@@ -1,0 +1,48 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.iml
+
+# Logs
+*.log
+razor-debug.txt
+
+# Environment
+.env
+.env.local
+
+# Composer / PHP dependencies
+/vendor/
+/composer.lock
+
+# Node
+node_modules/
+
+# Temporary or build files
+*.tmp
+*.swp
+
+# Database dumps (ignore compressed or temp dumps)
+*.sql.gz
+*.sql.tmp
+
+# Sensitive config files (move creds to .env and remove from repo if needed)
+/includes/twilio_config.php
+/includes/razorpay_config.php
+/includes/db.php
+
+# Windows thumbnail cache
+Thumbs.db
+
+# PHPStorm
+.idea/
+
+# Misc
+.DS_Store
+
+# Allow tracking specific SQL files if desired (uncomment to include)
+# !vending_machine\\ (1).sql
